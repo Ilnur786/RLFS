@@ -10,7 +10,6 @@ from RNNSynthesis.helper import get_feature, get_feature_bits
 from RNNSynthesis.environment import SimpleSynthesis
 from CGRtools.files import SDFRead
 
-
 os.environ['DB'] = './data/db.shelve'
 os.environ['DATA'] = './data/rules'
 
@@ -37,10 +36,10 @@ os.environ['DATA'] = './data/rules'
 with SDFRead('/home/ilnur/Загрузки/molSet_largestCluster.sdf', 'rb') as f:
     mc = next(f)
 
-
 device = device("cuda" if cuda.is_available() else "cpu")
 lr = 0.0001
 env = SimpleSynthesis(mc)
+
 
 class Actor(Module):
     def __init__(self, action_size, inp_size=8192, learning_rate=0.0001):  # state == molecule_container
@@ -93,28 +92,28 @@ def train_iters(actor, critic, n_iters):
     optimizer_c = Adam(critic.parameters())
     for iter in range(n_iters):
         state = env.reset()
-        log_probs = []  # список ретурнов от лосс-функции log_prob()
+        log_probs = []  # список ретурнов от лосс-функции log_prob() - список тензоров
         values = []
         rewards = []
         masks = []
         entropy = 0
         env.reset()
 
-        for i in count():
+        for i in count():  # счетчик количества шагов , за которое добрались до цели
             env.render()
             state = FloatTensor(state).to(device)
-            dist, value = actor(state), critic(state)
+            dist, value = actor(state), critic(state)  # dist - distribution (распределение вероятностей)
 
             action = dist.sample()
             next_state, reward, done, _ = env.step(action.cpu().numpy())
 
             log_prob = dist.log_prob(action).unsqueeze(0)
-            entropy += dist.entropy().mean()
+            entropy += dist.entropy().mean()  # mean - среднее значение
 
             log_probs.append(log_prob)
             values.append(value)
             rewards.append(tensor([reward], dtype=float, device=device))
-            masks.append(tensor([1-done], dtype=float, device=device)) # 1 - False = 1
+            masks.append(tensor([1 - done], dtype=float, device=device))  # 1 - False = 1
 
             state = next_state
 
@@ -122,12 +121,11 @@ def train_iters(actor, critic, n_iters):
                 print('Iteration: {}, Score: {}'.format(iter, i))
                 break
 
-
         next_state = FloatTensor(next_state).to(device)
         next_value = critic(next_state)
         returns = compute_returns(next_value, rewards, masks)
 
-        log_probs = cat(log_probs)
+        log_probs = cat(log_probs)  # конкатенация тензоров (по оси х)
         returns = cat(returns).detach()
         values = cat(values)
 
@@ -144,7 +142,8 @@ def train_iters(actor, critic, n_iters):
         optimizer_c.step()
     save(actor, 'data/model/actor.pkl')
     save(critic, 'data/model/critic.pkl')
-    env.close()
+    # env.close()
+
 
 if __name__ == '__main__':
     action_size = 1000
