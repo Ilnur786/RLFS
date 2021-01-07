@@ -1,5 +1,5 @@
-# Project exclude paths
-/venv/
-/data/
-requirements.txt
+/venv
+/data
+test.py
+test_2.py
 prob.py
