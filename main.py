@@ -33,12 +33,12 @@ os.environ['DATA'] = './data/rules'
 # action_space = action_space
 # reward = reward
 
-with SDFRead('/home/ilnur/Загрузки/molSet_largestCluster.sdf', 'rb') as f:
-    mc = next(f)
-
+# with SDFRead('/home/ilnur/Загрузки/molSet_largestCluster.sdf', 'rb') as f:
+#     mc = next(f)
+#
 device = device("cuda" if cuda.is_available() else "cpu")
-lr = 0.0001
-env = SimpleSynthesis(mc)
+# lr = 0.0001
+# env = SimpleSynthesis(mc)
 
 
 class Actor(Module):
@@ -145,16 +145,16 @@ def train_iters(actor, critic, n_iters):
     # env.close()
 
 
-if __name__ == '__main__':
-    action_size = 1000
-    if os.path.exists('model/actor.pkl'):
-        actor = load('model/actor.pkl')
-        print('Actor Model loaded')
-    else:
-        actor = Actor(action_size).to(device)
-    if os.path.exists('model/critic.pkl'):
-        critic = load('model/critic.pkl')
-        print('Critic Model loaded')
-    else:
-        critic = Critic(action_size).to(device)
-    train_iters(actor, critic, n_iters=100)
+# if __name__ == '__main__':
+#     action_size = 1000
+#     if os.path.exists('model/actor.pkl'):
+#         actor = load('model/actor.pkl')
+#         print('Actor Model loaded')
+#     else:
+#         actor = Actor(action_size).to(device)
+#     if os.path.exists('model/critic.pkl'):
+#         critic = load('model/critic.pkl')
+#         print('Critic Model loaded')
+#     else:
+#         critic = Critic(action_size).to(device)
+#     train_iters(actor, critic, n_iters=100)
