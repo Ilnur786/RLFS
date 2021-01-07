@@ -9,6 +9,7 @@ from torch.optim import Adam
 from RNNSynthesis.helper import get_feature, get_feature_bits
 from RNNSynthesis.environment import SimpleSynthesis
 from CGRtools.files import SDFRead
+import random
 
 os.environ['DB'] = './data/db.shelve'
 os.environ['DATA'] = './data/rules'
@@ -52,8 +53,7 @@ class Actor(Module):
         self.linear3 = Linear(256, self.ac)
 
     def forward(self, state, activation=ReLU):
-        state = get_feature_bits(state)
-        output = activation(self.linear1(Tensor(state)))
+        output = activation(self.linear1(Tensor(state).to("CPU")))
         output = activation(self.linear2(output))
         output = self.linear3(output)
         distribution = Categorical(softmax(output, dim=-1))
@@ -71,8 +71,7 @@ class Critic(Module):
         self.linear3 = Linear(256, 1)
 
     def forward(self, state, activation=ReLU):
-        state = get_feature_bits(state)
-        output = activation(self.linear1(Tensor(state)))
+        output = activation(self.linear1(Tensor(state).to("CPU")))
         output = activation(self.linear2(output))
         value = self.linear3(output)
         return value
@@ -87,22 +86,26 @@ def compute_returns(next_value, rewards, masks, gamma=0.99):
     return returns
 
 
-def train_iters(actor, critic, enviroment, n_iters):
+def train_iters(actor, critic, enviroment, target, n_iters):
     optimizer_a = Adam(actor.parameters())
     optimizer_c = Adam(critic.parameters())
     for iter in range(n_iters):
-        state = enviroment.reset()
+        enviroment.reset()
+        state, reward, done, info = enviroment.step(random.choice(enviroment.action_space))
+        state = get_feature_bits(state)
+        print(type(state))
         # state = np.array(state)  #моя вставка
         log_probs = []  # список ретурнов от лосс-функции log_prob() - список тензоров
         values = []
         rewards = []
         masks = []
         entropy = 0
-        enviroment.reset()
+        # enviroment.reset()
 
         for i in count():  # счетчик количества шагов , за которое добрались до цели
             enviroment.render()
-            state = FloatTensor(state).to(device)
+            state = FloatTensor(state).to(device)  # ЧТО ЗАНЧИТ ТО?????????????? CPU & CUDA????????????
+            print(type(state))
             dist, value = actor(state), critic(state)  # dist - distribution (распределение вероятностей)
 
             action = dist.sample()
@@ -119,6 +122,10 @@ def train_iters(actor, critic, enviroment, n_iters):
             state = next_state
 
             if done:
+                print('Iteration: {}, Score: {}'.format(iter, i))
+                break
+
+            elif len(state) - len(target) >= 20:
                 print('Iteration: {}, Score: {}'.format(iter, i))
                 break
 
