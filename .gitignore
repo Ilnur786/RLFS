@@ -1,5 +1,6 @@
 /venv
 /data
+.idea
 test.py
 test_2.py
 prob.py
