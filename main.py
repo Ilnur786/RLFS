@@ -43,36 +43,39 @@ device = device("cuda" if cuda.is_available() else "cpu")
 
 
 class Actor(Module):
-    def __init__(self, action_size, inp_size=8192, learning_rate=0.0001):  # state == molecule_container
+    def __init__(self, action_size, inp_size=8192, learning_rate=0.0001, activation=ReLU):  # state == molecule_container
         super(Actor, self).__init__()
         self.inps = inp_size
         self.ac = action_size
         self.lr = learning_rate
+        self.af = activation()
         self.linear1 = Linear(self.inps, 128)
         self.linear2 = Linear(128, 256)
         self.linear3 = Linear(256, self.ac)
 
-    def forward(self, state, activation=ReLU):
-        output = activation(self.linear1(Tensor(state).to("CPU")))
-        output = activation(self.linear2(output))
+    def forward(self, state):
+        Tensor([1]).to(state.device)
+        output = self.af(self.linear1(state))
+        output = self.af(self.linear2(output))
         output = self.linear3(output)
         distribution = Categorical(softmax(output, dim=-1))
         return distribution
 
 
 class Critic(Module):
-    def __init__(self, action_size, inp_size=8192, learning_rate=0.0001):
+    def __init__(self, action_size, inp_size=8192, learning_rate=0.0001, activation=ReLU):
         super(Critic, self).__init__()
         self.inps = inp_size
         self.ac = action_size
         self.lr = learning_rate
+        self.af = activation()
         self.linear1 = Linear(self.inps, 128)
         self.linear2 = Linear(128, 256)
         self.linear3 = Linear(256, 1)
 
-    def forward(self, state, activation=ReLU):
-        output = activation(self.linear1(Tensor(state).to("CPU")))
-        output = activation(self.linear2(output))
+    def forward(self, state):
+        output = self.af(self.linear1(state))
+        output = self.af(self.linear2(output))
         value = self.linear3(output)
         return value
 
@@ -104,7 +107,7 @@ def train_iters(actor, critic, enviroment, target, n_iters):
 
         for i in count():  # счетчик количества шагов , за которое добрались до цели
             enviroment.render()
-            state = FloatTensor(state).to(device)  # ЧТО ЗАНЧИТ ТО?????????????? CPU & CUDA????????????
+            state = FloatTensor(state).to(device)  # to("CUDA"/"CPU") - переводит данные в память видеокарты / озу
             print(type(state))
             dist, value = actor(state), critic(state)  # dist - distribution (распределение вероятностей)
 
