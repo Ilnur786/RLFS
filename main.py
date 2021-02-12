@@ -94,8 +94,12 @@ def train_iters(actor, critic, enviroment, target, n_iters):
     optimizer_c = Adam(critic.parameters())
     for iter in range(n_iters):
         enviroment.reset()
-        state, reward, done, info = enviroment.step(random.choice(enviroment.action_space))
-        state = get_feature_bits(state)
+        r_action = random.choice(enviroment.action_space) # при r_action = 396925 , state получается None. После блока трай эксепт выполнение кода продолжается.
+        state, reward, done, info = enviroment.step(r_action)
+        try:
+            state = get_feature_bits(state)
+        except Exception:
+            print(f'r_action={r_action}; state={state}; state type={type(state)} !!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
         print(type(state))
         # state = np.array(state)  #моя вставка
         log_probs = []  # список ретурнов от лосс-функции log_prob() - список тензоров
@@ -112,7 +116,14 @@ def train_iters(actor, critic, enviroment, target, n_iters):
             dist, value = actor(state), critic(state)  # dist - distribution (распределение вероятностей)
 
             action = dist.sample()
-            next_state, reward, done, _ = enviroment.step(action.cpu().numpy())
+            try:
+                next_state, reward, done, _ = enviroment.step(int(action.cpu().numpy())) #File "/home/ilnur/PycharmProjects/RL/venv/lib/python3.8/site-packages/RNNSynthesis/environment.py", line 85, in step
+                                                                                            # assert action in self.action_space, \
+                                                                                        # AssertionError: 0 (<class 'int'>) invalid
+            except AssertionError:
+                print(f'ошибка выпала на action={action}, ввиде int={int(action.cpu().numpy())}, тип последнего:{type(int(action.cpu().numpy()))} ??????????????????????????????????')
+
+            next_state = get_feature_bits(next_state)
 
             log_prob = dist.log_prob(action).unsqueeze(0)
             entropy += dist.entropy().mean()  # mean - среднее значение
