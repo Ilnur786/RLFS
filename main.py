@@ -94,7 +94,7 @@ def train_iters(actor, critic, enviroment, target, n_iters):
     optimizer_c = Adam(critic.parameters())
     for iter in range(n_iters):
         enviroment.reset()
-        r_action = random.choice(enviroment.action_space)
+        r_action = random.choice(enviroment.action_space) #вместо рандомного выбора ранжировать билдинг блокс по танимото и выбирать по очереди
         while r_action is None:
             r_action = random.choice(enviroment.action_space) # при r_action = 396925 , state получается None. После блока трай эксепт выполнение кода продолжается.
         state, reward, done, info = enviroment.step(r_action)
