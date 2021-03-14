@@ -119,9 +119,9 @@ def train_iters(actor, critic, enviroment, target, n_iters):
 
             action = dist.sample()
             action += 1
-            action.item()
+            action = action.item()
             try:
-                next_state, reward, done, _ = enviroment.step(int(action.cpu().numpy())) #File "/home/ilnur/PycharmProjects/RL/venv/lib/python3.8/site-packages/RNNSynthesis/environment.py", line 85, in step
+                next_state, reward, done, _ = enviroment.step(action) #File "/home/ilnur/PycharmProjects/RL/venv/lib/python3.8/site-packages/RNNSynthesis/environment.py", line 85, in step
                                                                                             # assert action in self.action_space, \
                                                                                         # AssertionError: 0 (<class 'int'>) invalid
             except AssertionError:
