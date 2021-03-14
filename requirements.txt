@@ -11,4 +11,4 @@ git+https://github.com/pandylandy/RNNSynthesis.git@shelvemorgan#egg=RNNSynthesis
 git+https://github.com/stsouko/LazyPony@master#egg=LazyPony
 git+https://github.com/pandylandy/CGRdbData.git@master#egg=CGRdbData
 # requirements below need to actor-critic model
-torch
+# torch
