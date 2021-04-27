@@ -7,8 +7,10 @@ CGRtools[mrv]
 git+https://github.com/stsouko/CIMtools.git@master#egg=CIMtools
 git+https://github.com/stsouko/CGRdb.git@4.0#egg=CGRdb
 # git+https://github.com/pandylandy/RNNSynthesis.git@smcount4#egg=RNNSynthesis не работает
-git+https://github.com/pandylandy/RNNSynthesis.git@shelvemorgan#egg=RNNSynthesis
+git+https://github.com/pandylandy/RNNSynthesis.git@master#egg=RNNSynthesis
 git+https://github.com/stsouko/LazyPony@master#egg=LazyPony
 git+https://github.com/pandylandy/CGRdbData.git@master#egg=CGRdbData
-# requirements below need to actor-critic model
-# torch
+matplotlib
+pandas
+torch
+seaborn
